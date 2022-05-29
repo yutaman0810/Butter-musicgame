@@ -295,9 +295,11 @@ function drawGameover(){
 
 // ------------- クリア画面 ---------------------
 
-let score = point*100 - minus*100;
+let score;
 
 function drawClear(){
+  score = point*100 - minus*100;
+
   background(255,250,100);
   fill(0);
   textSize(50);
@@ -315,9 +317,20 @@ function drawClear(){
   text("ミス："+ minus*100,  50, 400);
 
   fill(0);
-  textSize(30);
+  textSize(40);
   textAlign(RIGHT);
-  text(point*100 + " - " + minus*100 +  " = " + score);
+  text(point*100 + " - " + minus*100 +  " = " + score, 1050, 380);
+
+  image(img_egao, 800, 450, img_egao.width/0.9, img_egao.height/0.9);
+
+  fill(255,0,0);
+  stroke(0)
+  textSize(50);
+  textAlign(LEFT);
+  textStyle(BOLD);
+  text("SCORE："+ score,  50, 600);
+  noStroke();
+
 }
 
 // **********************************************

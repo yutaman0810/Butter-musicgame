@@ -106,7 +106,7 @@ function updatePosition(entity) {
     minusLife();
   }
   if(minus==15){
-    gameState="gameover"
+    gameState="gameover";
   }
 }
 

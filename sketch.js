@@ -21,6 +21,13 @@ let img_maple;
 let img_butter;
 let gameState = "start";
 let minus=0;
+let first_s;
+let last_s;
+let push_s;
+let gameover_s;
+let congla_s
+let img_oko;
+let img_egao;
 
 /**アイコンの選択 "パンケーキ"か"じゃがいも"か"食パン"を入れるものとする(高橋)*/
 let icons;
@@ -38,7 +45,16 @@ function preload() {
     img_solt = loadImage('./pictures/solt.jpg');
     img_maple = loadImage('./pictures/maple.jpg');
     img_butter = loadImage('./pictures/butter.jpg');
-    sound = loadSound("Butter.mp3");
+    img_how = loadImage("./pictures/howtoplay.png");
+    img_oko = loadImage("./pictures/oko.jpg");
+    img_egao = loadImage("./pictures/egao.jpg");
+
+    sound = loadSound("./music/Butter.mp3");
+    first_s = loadSound("./music/first.mp3");
+    last_s = loadSound("./music/last.mp3");
+    push_s = loadSound("./music/push.mp3");
+    gameover_s = loadSound("./music/gameover.mp3");
+    congla_s = loadSound("./music/congla.mp3");
 }
 
 
@@ -68,7 +84,7 @@ function draw() {
   if(S===1){
     time = time + pathTime;
   }
-  if(time>102 && gameState!="gameover"){
+  if(time>103&& gameState!="gameover"){
     gameState="clear";
     drawClear();
     sound.pause();
@@ -93,7 +109,7 @@ function checkGameState(){
   } 
 }
   else if(gameState=="gameover"){
-    drawGameover();
+    drawClear();
     sound.pause();
   }
 }
@@ -188,6 +204,31 @@ function drawFirst(){
   button_how.mousePressed(drawHow);
 }
 
+// -------------- 遊び方画面 ---------------
+function drawHow(){
+  button_start.remove();
+  button_how.remove();
+  background(176, 196, 222);
+  fill(0);
+  textSize(40);
+  text("遊び方", width/2, height/15);
+
+  image(img_how, 20, 100, img_how.width/2.3, img_how.height/2.3);
+
+  button_start2 = createButton("スタート");
+  button_start2.style("background", "#FFD700");
+  button_start2.size(120,40)
+  button_start2.position(width/2+350, height/2+200);
+  button_start2.style("font-size", "20")
+  button_start2.style("border-radius", "5px");
+  button_start2.mousePressed(goStart);
+}
+
+function goStart(){
+  drawStart();
+  button_start2.remove();
+}
+
 //------------ スタート画面(マツモト) ------------------------
 function drawStart() {
   button_start.remove();
@@ -211,16 +252,6 @@ function drawStart() {
     button_bread.mousePressed(clicked_bread);
 }
 
-// -------------- 遊び方画面 ---------------
-function drawHow(){
-  button_start.remove();
-  button_how.remove();
-  background(176, 196, 222);
-  fill(0);
-  textSize(40);
-  text("遊び方", width/2, height/10);
-}
-
 //---- パンケーキが選択されたら(高橋)-----
 function clicked_pancake() {
     icons = "パンケーキ";
@@ -228,7 +259,7 @@ function clicked_pancake() {
     button_pancake.remove();
     button_bread.remove();
     button_potato.remove();
-    sound.play();
+    sound.play(); 
 }
 
 //----じゃがいもが選択されたら(高橋)----
@@ -254,17 +285,39 @@ function clicked_bread() {
 // ------------ ゲームオーバー画面 ---------------
 
 function drawGameover(){
-  background(176, 196, 222, 192);
+  background(255,30,30);
     fill(255);
-    textSize(40);
+    textSize(75);
     textAlign(CENTER, CENTER);
     text("ゲームオーバー！", width / 2, height / 3);
+    image(img_oko, 315,400, img_oko.width / 1.1, img_oko.height /1.1);
   }
 
 // ------------- クリア画面 ---------------------
 
+let score = point*100 - minus*100;
+
 function drawClear(){
-  background(255,250,205);
+  background(255,250,100);
+  fill(0);
+  textSize(50);
+  textAlign(CENTER,CENTER);
+  text("ゲームクリア！",  width / 2, height / 12);
+
+  fill(0);
+  textSize(30);
+  textAlign(LEFT);
+  text("バターポイント："+ point*100, 50, 300);
+
+  fill(0);
+  textSize(30);
+  textAlign(LEFT);
+  text("ミス："+ minus*100,  50, 400);
+
+  fill(0);
+  textSize(30);
+  textAlign(RIGHT);
+  text(point*100 + " - " + minus*100 +  " = " + score);
 }
 
 // **********************************************

@@ -5,8 +5,10 @@ let canvasHeight;
 let dropX;
 let num;
 let tempo;
+let sound;
 let set1;
 let set2;
+let set3;
 let point;
 let img_pancake;
 let img_bread;
@@ -42,7 +44,7 @@ function preload() {
 
 
 // ------------- setup, draw ---------------
-//drawStartを付けたし（マツモト）
+
 function setup() {
     canvasWidth = 900;
     canvasHeight = 800;
@@ -51,16 +53,33 @@ function setup() {
     button_pancake = createButton("パンケーキ");
     button_potato = createButton("じゃがいも");
     button_bread = createButton("食パン");
-    drawStart();
+    drawFirst();
 
     tempo = [];
     set1 = [];
     set2 = [];
+    set3 = [];
     point=0;
 }
 
 function draw() {
   print(time);
+  checkGameState();
+  if(S===1){
+    time = time + pathTime;
+  }
+  if(time>102 && gameState!="gameover"){
+    gameState="clear";
+    drawClear();
+    sound.pause();
+  }
+}
+
+//****************************************************** */
+// ----------------- メイン関数定義 --------------------
+
+// ---------- gameState分岐関数 --------------
+function checkGameState(){
   if(gameState=="start"){
     button_pancake.mousePressed(clicked_pancake);
     button_potato.mousePressed(clicked_potato);
@@ -69,41 +88,61 @@ function draw() {
   else if(gameState=="play"){
     timeCount();
     if(time>5){
-    rhythm();
-    userIcon();
+      rhythm();
+      userIcon();
   } 
 }
   else if(gameState=="gameover"){
     drawGameover();
+    sound.pause();
   }
 }
 
-function rhythm() {
- 
+// ----------- ゲーム内容のupdateをする関数 --------------
+function updatePosition(entity) {
+  entity.x += entity.vx;
+  entity.y += entity.vy;
+  if(entity.y==800) {
+    minusLife();
+  }
+  if(minus==15){
+    gameState="gameover"
+  }
+}
+
+// ---------- リズムテンポBlock(バター)生成関数 -----------------------
+function rhythm() { // ゲームのメインとなる関数
+
   background(0);  
 
-// 1テンポ目  
+  // 1テンポ目  
   for (let block of set1) updatePosition(block);
   for (let block of set1)  applyGravity(block);
-
   if(frameCount % 32 === 1) makeSet1(); // ブロック等間隔で作成
   set1 = set1.filter(blockAlive); // 範囲外のブロック削除
-  set1 = set1.filter(deleteSet1); // 35秒後にset1のブロック配列削除
-  //print(time)
 
 // 2テンポ目
 if(time > 33){
   for (let block of set2) updatePosition(block);
   for (let block of set2)  applyGravity(block);
-
   if(frameCount % 32 === 1) makeSet2();
   set2 = set2.filter(blockAlive);
   set2 = set2.filter(deleteSet2);
 }; 
 
+
+// 3テンポ目
+if(time > 80){
+  for (let block of set3) updatePosition(block);
+  for (let block of set3)  applyGravity(block);
+  if(frameCount % 32 === 1) makeSet3();
+  set3 = set3.filter(blockAlive);
+}
+
 // 衝突判定・キー判定
 collKey(set1);
 collKey(set2);
+collKey(set3);
 
 // 全エンティティの描画
 
@@ -111,14 +150,50 @@ collKey(set2);
   createPlayerLine();
   for (let block of set1) drawBlock(block);
   for (let block of set2) drawBlock(block);
+  for (let block of set3) drawBlock(block);
+
   for (let pointGage of pointGages) drawGage(pointGage); 
   for (let lifeGage of lifeGages) drawGage2(lifeGage);
+
 }
 
-//スタート画面(マツモト)
+
+// ***********************************************************
+// gameState別の画面描画関数 ↓↓↓ 
+
+// ----------- 初期画面 -----------------------
+function drawFirst(){
+  background(255, 250, 200);
+  fill(0);
+  textSize(80);
+  textAlign(CENTER,CENTER);
+  text("Butter Music Game", width/2, height/5);
+
+  image(img_butter,320,550,img_butter.width/1.1,img_butter.height/1.1);
+
+  button_start = createButton("スタート");
+  button_start.style("background", "#FFD700");
+  button_start.size(300,80)
+  button_start.position(width/2-150, height/2-100);
+  button_start.style("font-size", "30")
+  button_start.style("border-radius", "5px");
+  button_start.mousePressed(drawStart);
+
+  button_how = createButton("遊び方");
+  button_how.style("background", "#FFD700")
+  button_how.size(300,80)
+  button_how.position(width/2-150, height/2);
+  button_how.style("font-size", "30")
+  button_how.style("border-radius", "5px");
+  button_how.mousePressed(drawHow);
+}
+
+//------------ スタート画面(マツモト) ------------------------
 function drawStart() {
-    background(176, 196, 222, 192);
-    fill(255);
+  button_start.remove();
+  button_how.remove();
+  background(255,250,205);
+    fill(0);
     textSize(40);
     textAlign(CENTER, CENTER);
     text("どのアイコンにしますか？ボタンを押してください", width / 2, height / 2.7);
@@ -136,15 +211,17 @@ function drawStart() {
     button_bread.mousePressed(clicked_bread);
 }
 
-// ------------ サウンド　------------------
+// -------------- 遊び方画面 ---------------
+function drawHow(){
+  button_start.remove();
+  button_how.remove();
+  background(176, 196, 222);
+  fill(0);
+  textSize(40);
+  text("遊び方", width/2, height/10);
+}
 
-let sound;
-
-
-// *********************************
-//-------------アイコン選択後 setup(高橋)------------
-
-//----パンケーキが選択されたら(高橋)-----
+//---- パンケーキが選択されたら(高橋)-----
 function clicked_pancake() {
     icons = "パンケーキ";
     gameState="play"
@@ -162,7 +239,6 @@ function clicked_potato() {
     button_bread.remove();
     button_pancake.remove();
     sound.play();
-
 }
 
 //----食パンが選択されたら(高橋)----
@@ -175,7 +251,26 @@ function clicked_bread() {
     sound.play();
 }
 
+// ------------ ゲームオーバー画面 ---------------
 
+function drawGameover(){
+  background(176, 196, 222, 192);
+    fill(255);
+    textSize(40);
+    textAlign(CENTER, CENTER);
+    text("ゲームオーバー！", width / 2, height / 3);
+  }
+
+// ------------- クリア画面 ---------------------
+
+function drawClear(){
+  background(255,250,205);
+}
+
+// **********************************************
+// -------------　メインエンティティの生成とその処理 -----------------
+
+// ユーザー生成 ↓↓↓
 // ------- ユーザーアイコン設定 ----------------
 let a
 
@@ -192,7 +287,7 @@ function userIcon(){
       a = 323;
   }
   image(img_pancake, a, 620, img_grey_pancake.width / 7, img_grey_pancake.height / 7);
-  ;
+  
   }
   else if(icons=="じゃがいも"){
     image(img_grey_potato, 123, 620, img_grey_potato.width / 7, img_grey_potato.height / 7);
@@ -206,7 +301,7 @@ function userIcon(){
       a = 323;
   }
   image(img_potato, a, 620, img_grey_potato.width / 7, img_grey_potato.height / 7);
-  ;
+  
   }
   else if(icons=="食パン"){
     image(img_grey_bread, 130, 620, img_grey_bread.width / 8, img_grey_bread.height / 8);
@@ -220,12 +315,12 @@ function userIcon(){
       a = 330;
   }
   image(img_bread, a, 620, img_grey_bread.width / 8, img_grey_bread.height / 8);
-  ;
+  
   }
 }
 
 
-//矢印キーを離した時
+//------------- 矢印キーを離した時 --------------
 function greyDraw(){
     switch (icons) {
         case "パンケーキ":
@@ -255,29 +350,10 @@ function greyDraw(){
 }
 
 
-
-function updatePosition(entity) {
-    entity.x += entity.vx;
-    entity.y += entity.vy;
-    if(entity.y==800) {
-      minusLife();
-    }
-    if(minus==15){
-      gameState="gameover"
-    }
-}
-
-// -------------　プレイヤーLINE -----------------
-
-function createPlayerLine() {
-    fill(0, 255, 0, 190);
-    rect(400, 700, 600, 40);
-}
-
-
-// ------------- ブロック　---------------
-
-function createBlock(y) {
+// ******************************************
+// Blockの関数　↓↓↓ 
+// ------------- ブロックの生成　---------------
+function createBlock(y) { 
 
     num = random(0, 3);　// 乱数とブロック落下レーンの生成
     if (num < 1) {
@@ -297,49 +373,65 @@ function createBlock(y) {
     }
 }
 
-
-function drawBlock(entity) {
-    fill(712, 255, 30);
-    rect(entity.x, entity.y, 200, 30);
+// -------------- ブロック描画 ----------------
+function drawBlock(entity) { 
+  image(img_butter, entity.x-90,entity.y-88, img_butter.width / 3, img_butter.height /3);
 }
 
+// ------------ ブロックの重力生成 ---------------
 function applyGravity(entity) {
     entity.y += 10;
 }
 
+// -------------- 範囲外・画面外ブロックの判定 ------------
 function blockAlive(entity) {
     return 1000 > entity.y;  // 1000以内はtrue
 }
 
+// ------------- 範囲外ブロックの削除 --------------
 function blockDelete(entity) {
     entity.y = 1000;
 }
 
-
+// リズムテンポを時間別で処理　↓↓↓　
 function deleteSet1() {
-    return time < 35;　// 開始35秒はset1テンポ
+  return time < 35;
 }
 
-function deleteSet2() {
-    return time < 1000; // 開始100秒までset2テンポ
+function deleteSet2(entity) {
+    return time < 54; // 開始55秒までset2テンポ
 }
 
-// ----------- リズム作成　--------------------
-
-let time;
-
-function timeCount() {
-    time = millis() // タイム測定
-    time = int(time / 1000); // 秒数
+function deleteSet3(){
+    return time < 1000
 }
 
+
+// ----------- timeカウント作成　--------------------
+let time = 0;
+let pathTime = 0.035;
+let S = 0;
+
+function timeCount(){
+  if(S===0){
+    S = 1;
+  } else {
+    S = 0;
+  }
+}
+
+
+// ----------- リズムテンポset別の配列生成 ---------------
 function makeSet1() { // テンポ１作成
     set1.push(createBlock(-100));
 }
 
-function makeSet2() { // テンポ２作成
-    set2.push(createBlock(-100));
+function makeSet2() { // + テンポ２作成
     set2.push(createBlock(-250));
+}
+
+function makeSet3(){
+  set3.push(createBlock(-250));
 }
 
 // ----------- 衝突判定set　-------------
@@ -350,21 +442,23 @@ function colling(
     collisionDistanceY
 ) {
 
-    let currentDistanceX = abs(400 - entity.x);
+    let currentDistanceX = abs(400 - (entity.x-90));
     if (collisionDistanceX <= currentDistanceX) return false;
 
-    let currentDistanceY = abs(700 - entity.y);
+    let currentDistanceY = abs(700 - (entity.y-88));
     if (collisionDistanceY <= currentDistanceY) return false;
 
     return true;
 }
 
+// ------------ set別での衝突判定生成　---------------
 function collKey(setNum){
   for(let block of setNum) {
     if(block.x == 200){
       if(colling(block, 300+100, 20+15-10) && keyCode == LEFT_ARROW){
         blockDelete(block);
         pointPlus();
+        getEffect(200);
         keyCode=""
       }
     }
@@ -372,6 +466,7 @@ function collKey(setNum){
       if(colling(block, 300+100, 20+15-10) && keyCode == UP_ARROW){
         blockDelete(block);
         pointPlus();
+        getEffect(400);
         keyCode=""
       }
     }
@@ -379,11 +474,26 @@ function collKey(setNum){
      if(colling(block, 300+100, 20+15-10) && keyCode == RIGHT_ARROW){
        blockDelete(block);
        pointPlus();
+       getEffect(600);
        keyCode=""
      }
    }
   }
 }
+
+// ----------- pointgetで光る ----------------
+function getEffect(x){
+  fill(255,255,0);
+  circle(x, 700, 200, 50);
+}
+
+// -------------　プレイヤーLINE -----------------
+
+function createPlayerLine() {　// ゲームの判定バー
+  fill(0, 255, 0, 190);
+  rect(400, 700, 600, 40);
+}
+
 
 // ----------- ポイントゲージ ------------------
 let gagePosition=720;
@@ -398,8 +508,10 @@ function createGageBlock(x){
   }
 }
 
+let yellowCode =200;
+
 function drawGage(entity){
-  fill(255);
+  fill(255,255,yellowCode);
   rect(entity.x,255,20,50);
 }
 
@@ -410,12 +522,14 @@ function addGage(){
 
 function pointPlus(){
   point += 1;
-  if(point%5==0){
+  yellowCode -= 30;
+  if(point%15==0){
     addGage(pointGages);
   } 
 }
 
 // ---------- ライフゲージ　-----------------
+
 let gagePosition2=1070;
 let lifeGage;
 let lifeGages=[];
@@ -442,12 +556,6 @@ function minusLife(){
   minus += 1;
   addGage2(lifeGages);
 }
-// ----------- ゲームオーバー　------------------
-
-function drawGameover(){
-  print("a")
-}
-
 
 // ----------- ポイントスペース描画　-------------
 
@@ -485,3 +593,4 @@ function drawPointSpace() { // ポイントスペース描画　x:600~900, y:800
     text("POINT GAGE", 820, 200);
 
 }
+

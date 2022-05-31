@@ -10,6 +10,9 @@ let set1;
 let set2;
 let set3;
 let point;
+let minus;
+let gameState = "start";
+
 let img_pancake;
 let img_bread;
 let img_potato;
@@ -19,15 +22,16 @@ let img_grey_potato;
 let img_solt;
 let img_maple;
 let img_butter;
-let gameState = "start";
-let minus=0;
+let img_oko;
+let img_egao;
+let img_bts
+
 let first_s;
 let last_s;
 let push_s;
 let gameover_s;
-let congla_s
-let img_oko;
-let img_egao;
+let great_s
+
 
 /**アイコンの選択 "パンケーキ"か"じゃがいも"か"食パン"を入れるものとする(高橋)*/
 let icons;
@@ -48,13 +52,14 @@ function preload() {
     img_how = loadImage("./pictures/howtoplay.png");
     img_oko = loadImage("./pictures/oko.jpg");
     img_egao = loadImage("./pictures/egao.jpg");
+    img_bts = loadImage("./pictures/bts.jpg");
 
     sound = loadSound("./music/Butter.mp3");
-    first_s = loadSound("./music/first.mp3");
+    cheer_s = loadSound("./music/cheer.mp3")
     last_s = loadSound("./music/last.mp3");
-    push_s = loadSound("./music/push.mp3");
+    poon = loadSound("./music/dram.mp3");
     gameover_s = loadSound("./music/gameover.mp3");
-    congla_s = loadSound("./music/congla.mp3");
+    great_s = loadSound("./music/greate.mp3");
 }
 
 
@@ -62,20 +67,7 @@ function preload() {
 // ------------- setup, draw ---------------
 
 function setup() {
-    canvasWidth = 900;
-    canvasHeight = 800;
-    createCanvas(canvasWidth + 200, canvasHeight);
-    rectMode(CENTER);
-    button_pancake = createButton("パンケーキ");
-    button_potato = createButton("じゃがいも");
-    button_bread = createButton("食パン");
-    drawFirst();
-
-    tempo = [];
-    set1 = [];
-    set2 = [];
-    set3 = [];
-    point=0;
+  resetGame();
 }
 
 function draw() {
@@ -87,12 +79,42 @@ function draw() {
   if(time>103&& gameState!="gameover"){
     gameState="clear";
     drawClear();
-    sound.pause();
   }
 }
 
 //****************************************************** */
 // ----------------- メイン関数定義 --------------------
+
+// ----------------- マウスクリック関数 ----------------
+function mousePressed(){
+  if(gameState=="gameover"){
+    gameover_s.play();
+  }
+  else if(gameState=="clear"){
+    cheer_s.play();
+    great_s.play();
+  }
+}
+
+// ---------- reset 関数 --------------------
+function resetGame(){
+  last_s.play();
+  canvasWidth = 900;
+  canvasHeight = 800;
+  createCanvas(canvasWidth + 200, canvasHeight);
+  rectMode(CENTER);
+  button_pancake = createButton("パンケーキ");
+  button_potato = createButton("じゃがいも");
+  button_bread = createButton("食パン");
+  drawFirst();
+
+  tempo = [];
+  set1 = [];
+  set2 = [];
+  set3 = [];
+  point=0;
+  minus=0;
+}
 
 // ---------- gameState分岐関数 --------------
 function checkGameState(){
@@ -101,14 +123,18 @@ function checkGameState(){
     button_potato.mousePressed(clicked_potato);
     button_bread.mousePressed(clicked_bread);
   } 
-  else if(gameState=="play"){
+  else if(gameState=="play"){  
     timeCount();
-    if(time>5){
+    if(time>4.7){
       rhythm();
       userIcon();
   } 
 }
   else if(gameState=="gameover"){
+    drawGameover();
+    sound.pause();
+  }
+  else if(gameState=="clear"){
     drawClear();
     sound.pause();
   }
@@ -260,6 +286,7 @@ function clicked_pancake() {
     button_bread.remove();
     button_potato.remove();
     sound.play(); 
+    last_s.pause();
 }
 
 //----じゃがいもが選択されたら(高橋)----
@@ -270,6 +297,7 @@ function clicked_potato() {
     button_bread.remove();
     button_pancake.remove();
     sound.play();
+    last_s.pause()
 }
 
 //----食パンが選択されたら(高橋)----
@@ -280,17 +308,37 @@ function clicked_bread() {
     button_potato.remove();
     button_pancake.remove();
     sound.play();
+    last_s.pause();
 }
 
 // ------------ ゲームオーバー画面 ---------------
 
 function drawGameover(){
+  score = point*100 - minus*100;
   background(255,30,30);
     fill(255);
     textSize(75);
     textAlign(CENTER, CENTER);
-    text("ゲームオーバー！", width / 2, height / 3);
-    image(img_oko, 315,400, img_oko.width / 1.1, img_oko.height /1.1);
+    text("ゲームオーバー！", width / 2, height / 12);
+    image(img_oko, 600,400, img_oko.width / 1.1, img_oko.height /1.1);
+
+    fill(0);
+    textSize(30);
+    textAlign(LEFT);
+    text("バターポイント："+ point*100, 50, 300);
+  
+    fill(0);
+    textSize(30);
+    textAlign(LEFT);
+    text("ミス："+ minus*100,  50, 400);
+  
+    fill(255,255,0);
+    stroke(0)
+    textSize(40);
+    textAlign(LEFT);
+    textStyle(BOLD);
+    text("SCORE："+ score,  50, 600);
+    noStroke();
   }
 
 // ------------- クリア画面 ---------------------
@@ -317,15 +365,15 @@ function drawClear(){
   text("ミス："+ minus*100,  50, 400);
 
   fill(0);
-  textSize(40);
+  textSize(50);
   textAlign(RIGHT);
-  text(point*100 + " - " + minus*100 +  " = " + score, 1050, 380);
+  text(point*100 + " - " + minus*100 +  " = " + score, 1000, 350);
 
   image(img_egao, 800, 450, img_egao.width/0.9, img_egao.height/0.9);
 
   fill(255,0,0);
   stroke(0)
-  textSize(50);
+  textSize(60);
   textAlign(LEFT);
   textStyle(BOLD);
   text("SCORE："+ score,  50, 600);
@@ -341,6 +389,7 @@ function drawClear(){
 let a
 
 function userIcon(){
+  image(img_bts, 705,500,img_bts.width, img_bts.height);
   if(icons=="パンケーキ"){
     image(img_grey_pancake, 123, 620, img_grey_pancake.width / 7, img_grey_pancake.height / 7);
     image(img_grey_pancake, 323, 620, img_grey_pancake.width / 7, img_grey_pancake.height / 7);
@@ -521,27 +570,30 @@ function colling(
 function collKey(setNum){
   for(let block of setNum) {
     if(block.x == 200){
-      if(colling(block, 300+100, 20+15-10) && keyCode == LEFT_ARROW){
+      if(colling(block, 300+100, 20+15-8) && keyCode == LEFT_ARROW){
         blockDelete(block);
         pointPlus();
         getEffect(200);
         keyCode=""
+        poon.play();
       }
     }
     if(block.x == 400){
-      if(colling(block, 300+100, 20+15-10) && keyCode == UP_ARROW){
+      if(colling(block, 300+100, 20+15-8) && keyCode == UP_ARROW){
         blockDelete(block);
         pointPlus();
         getEffect(400);
         keyCode=""
+        poon.play();
       }
     }
     if(block.x == 600){
-     if(colling(block, 300+100, 20+15-10) && keyCode == RIGHT_ARROW){
+     if(colling(block, 300+100, 20+15-8) && keyCode == RIGHT_ARROW){
        blockDelete(block);
        pointPlus();
        getEffect(600);
        keyCode=""
+       poon.play();
      }
    }
   }

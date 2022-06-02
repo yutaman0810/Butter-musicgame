@@ -68,6 +68,7 @@ function preload() {
 
 function setup() {
   resetGame();
+  
 }
 
 function draw() {

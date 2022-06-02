@@ -131,7 +131,8 @@ function checkGameState(){
       userIcon();
   } 
 }
-  else if(gameState=="gameover"){
+  else if(gameState=="gameover"){ 
+     
     drawGameover();
     sound.pause();
   }

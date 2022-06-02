@@ -391,6 +391,7 @@ function drawClear(){
 let a
 
 function userIcon(){
+
   image(img_bts, 705,500,img_bts.width, img_bts.height);
   if(icons=="パンケーキ"){
     image(img_grey_pancake, 123, 620, img_grey_pancake.width / 7, img_grey_pancake.height / 7);
